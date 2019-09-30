@@ -32,15 +32,25 @@ server.post('/hubs', (req, res) => {
     // get the hub data from the request
     const hubData = req.body;
     console.log('hubData', hubData)
-    //add the hub to the database
-    hubsModel
-    .add(hubData)
-    .then(hub => {
-        res.json(hub); //.json() will set the right headers and convert to JSON
-    })
-    .catch(error => {
-        res.json({message: `error saving the hub ${error}`})
-    });
+
+    // validate the data sent by the client
+    // NEVER TRUST THE CLIENT!!
+    if (!hubData.name) {
+        res.status(400).json({message: 'where is the name'})
+    } else {
+      
+        //add the hub to the database
+        hubsModel
+        .add(hubData)
+        .then(hub => {
+            res.json(hub); //.json() will set the right headers and convert to JSON
+        })
+        .catch(error => {
+            res.json({message: `error saving the hub ${error}`})
+        });  
+    }
+
+
 })
 
 // removing hubs
@@ -50,7 +60,7 @@ server.delete('/hubs/:id', (req, res) => {
     const id = req.params.id;
 
     console.log("ID", id)
-    
+
     hubsModel.remove(id)
     .then(hub => {
         res.json(hub);
@@ -60,6 +70,20 @@ server.delete('/hubs/:id', (req, res) => {
     });
 })
 
+
+server.put('/hubs/:id', (req, res) => {
+    const id = req.params.id;
+    const changes = req.body;
+
+    hubsModel
+    .update(id, changes)
+    .then(hub => {
+        res.json(hub);
+    })
+    .catch(error => {
+        res.json({message: `error put the hub ${error}`})
+    });
+})
 
 const port = 8000;
 server.listen(port, () => console.log(`\n** API on port ${port} is working`))
